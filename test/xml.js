@@ -1,6 +1,8 @@
 var expect = require('expect.js'),
-    _ = require('lodash'),
-    cheerio = require('..');
+    cheerio = require('..'),
+    _ = {
+      extend: require('lodash/assignIn')
+    };
 
 var xml = function(str, options) {
   options = _.extend({ xmlMode: true }, options);
@@ -25,6 +27,11 @@ describe('render', function() {
     it('should render <link /> tags (RSS) correctly', function() {
       var str = '<link>http://www.github.com/</link>';
       expect(xml(str)).to.equal('<link>http://www.github.com/</link>');
+    });
+
+    it('should escape entities', function(){
+      var str = '<tag attr="foo &amp; bar"/>';
+      expect(xml(str)).to.equal(str);
     });
 
   });

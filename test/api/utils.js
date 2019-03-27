@@ -35,6 +35,44 @@ describe('cheerio', function() {
   });
 
 
+  describe('.text', function() {
+    it('(cheerio object) : should return the text contents of the specified elements', function() {
+      var $ = cheerio.load('<a>This is <em>content</em>.</a>');
+      expect($.text($('a'))).to.equal('This is content.');
+    });
+
+    it('(cheerio object) : should omit comment nodes', function() {
+      var $ = cheerio.load('<a>This is <!-- a comment --> not a comment.</a>');
+      expect($.text($('a'))).to.equal('This is  not a comment.');
+    });
+
+    it('(cheerio object) : should include text contents of children recursively', function() {
+      var $ = cheerio.load('<a>This is <div>a child with <span>another child and <!-- a comment --> not a comment</span> followed by <em>one last child</em> and some final</div> text.</a>');
+      expect($.text($('a'))).to.equal('This is a child with another child and  not a comment followed by one last child and some final text.');
+    });
+
+    it('() : should return the rendered text content of the root', function() {
+      var $ = cheerio.load('<a>This is <div>a child with <span>another child and <!-- a comment --> not a comment</span> followed by <em>one last child</em> and some final</div> text.</a>');
+      expect($.text()).to.equal('This is a child with another child and  not a comment followed by one last child and some final text.');
+    });
+
+    it('(cheerio object) : should omit script tags', function(){
+       var $ = cheerio.load('<script>console.log("test")</script>');
+       expect($.text()).to.equal('');
+    });
+
+    it('(cheerio object) : should omit style tags', function(){
+       var $ = cheerio.load('<style type="text/css">.cf-hidden { display: none; } .cf-invisible { visibility: hidden; }</style>');
+       expect($.text()).to.equal('');
+    });
+
+     it('(cheerio object) : should include text contents of children omiting style and script tags', function(){
+       var $ = cheerio.load('<body>Welcome <div>Hello, testing text function,<script>console.log("hello")</script></div><style type="text/css">.cf-hidden { display: none; }</style>End of messege</body>');
+       expect($.text()).to.equal('Welcome Hello, testing text function,End of messege');
+    });
+
+  });
+
 
   describe('.load', function() {
 
@@ -157,6 +195,14 @@ describe('cheerio', function() {
       expect(cheerio.parseHTML('<#if><tr><p>This is a test.</p></tr><#/if>') || true).to.be.ok();
     });
 
+    it('(text) : should return an array that is not effected by DOM manipulation methods', function() {
+      var $ = cheerio.load('<div>');
+      var elems = $.parseHTML('<b></b><i></i>');
+
+      $('div').append(elems);
+
+      expect(elems).to.have.length(2);
+    });
   });
 
   describe('.contains', function() {
